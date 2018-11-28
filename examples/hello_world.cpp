@@ -10,8 +10,11 @@ using namespace caf;
 
 /*
  * simon:
- * "mirror" is a function,return a lambda expressions ,
- * the lambda will be used to create a behavior instance.
+ * "mirror" 是一个函数,返回一个 behavior  ,
+ * 使用 system.spawn(mirror); 创建基于函数的 Actor 时，mirror 作为参数传入spawn中,
+ * spawn 内部会创建 event_based_actor 的实例并调用mirror函数
+ *
+ * lambda 表达式被用来创建一个 behavior 实例.
  *
  * the behavior class template construct function was called
  *
@@ -26,7 +29,7 @@ using namespace caf;
  */
 behavior mirror(event_based_actor* self) {
   // return the (initial) actor behavior
-  return {
+  return { // 就是 return behavior{  的缩写，使用了隐式转换
     // a handler for messages containing a single string
     // that replies with a string
     [=](const string& what) -> string {

@@ -17,7 +17,7 @@ void caf_main(actor_system& system) {
       std::random_device rd;
       std::default_random_engine re(rd());
       std::chrono::milliseconds tout{re() % 10};
-      self->delayed_send(self, tout, 42);
+      self->delayed_send(self, tout, 42); // 下面的 receive 要求接收一个 int 类型的数据，42 就是这个数据
       self->receive(
         [i, self](int) {
           aout(self) << "Actor nr. "
