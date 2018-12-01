@@ -7,6 +7,7 @@
 // without updating the references in the *.tex files!
 // Manual references: lines 18-44, and 49-50 (Actor.tex)
 
+// 这个例子演示 Actor 的
 #include <iostream>
 
 #include "caf/all.hpp"
@@ -48,6 +49,10 @@ void caf_main(actor_system& system) {
   // create one cell for each implementation
   auto cell1 = system.spawn(type_checked_cell);
   auto cell2 = system.spawn(unchecked_cell);
+
+  // 一个 actor 的 function view 是把对 actor 的发送个接收回复过程包装成一个类似函数调用的形式
+  // make_function_view 返回一个函数对象，其 operator() 函数会使用一个 scope actor 阻塞发送消息
+  // 给目标 actor ，并等待返回值
   auto f = make_function_view(cell1);
   cout << "cell value: " << f(get_atom::value) << endl;
   f(put_atom::value, 20);

@@ -1,9 +1,11 @@
 /******************************************************************************\
  * This example is a very basic, non-interactive math service implemented     *
- * for both the blocking and the event-based API.                             *
+ * for both the blocking and the event-based API.
+ * 这个例子用来演示 静态/动态 类型，异步/阻塞 actor 的组合
 \******************************************************************************/
 
 // Manual refs: lines 19-21, 31-72, 74-108, 140-145 (Actor)
+
 
 #include <iostream>
 
@@ -21,6 +23,7 @@ using calculator_actor = typed_actor<replies_to<add_atom, int, int>::with<int>,
                                      replies_to<sub_atom, int, int>::with<int>>;
 
 // prototypes and forward declarations
+// 以下前置声明不是必须的
 behavior calculator_fun(event_based_actor* self);
 void blocking_calculator_fun(blocking_actor* self);
 calculator_actor::behavior_type typed_calculator_fun();
@@ -43,6 +46,9 @@ behavior calculator_fun(event_based_actor*) {
 // function-based, dynamically typed, blocking API
 void blocking_calculator_fun(blocking_actor* self) {
   bool running = true;
+  // receive_while 是 Block Actor 的一个 DSL 语法
+  // receive_while(running) 返回的是一个函数对象 blocking_actor::receive_while_helpe
+  // 其 operator() 接收后面的 lambda 参数列表作为参数。
   self->receive_while(running) (
     [](add_atom, int a, int b) {
       return a + b;
@@ -114,6 +120,7 @@ void tester(scoped_actor&) {
 // tests a calculator instance
 template <class Handle, class... Ts>
 void tester(scoped_actor& self, const Handle& hdl, int x, int y, Ts&&... xs) {
+  // 处理错误的 lambda 函数
   auto handle_err = [&](const error& err) {
     aout(self) << "AUT (actor under test) failed: "
                << self->system().render(err) << endl;
@@ -132,6 +139,7 @@ void tester(scoped_actor& self, const Handle& hdl, int x, int y, Ts&&... xs) {
     },
     handle_err
   );
+  //递归调用，而且是在编译期间递归处理完毕
   tester(self, std::forward<Ts>(xs)...);
 }
 
@@ -144,6 +152,8 @@ void caf_main(actor_system& system) {
   auto a6 = system.spawn<typed_calculator>();
   scoped_actor self{system};
   tester(self, a1, 1, 2, a2, 3, 4, a3, 5, 6, a4, 7, 8, a5, 9, 10, a6, 11, 12);
+
+  //给两个 blocking actor 发送退出命令
   self->send_exit(a1, exit_reason::user_shutdown);
   self->send_exit(a4, exit_reason::user_shutdown);
 }
